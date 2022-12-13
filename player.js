@@ -139,7 +139,7 @@ function setCurrentGameState(){
         state.camels[color].altitude = prompt (`How many camels are below the ${color} camel? `);
     })
 
-    // DEFAULTS
+    // NEW GAME
     if(newGame){ 
         console.log("The new game has successfully been set up!\n");
         return;
@@ -206,11 +206,17 @@ function setCurrentGameState(){
 }
 
 function modifyCurrentGameState(){
+    if(state === null){
+        console.log("Sorry, you haven't set a game state yet.\n");
+        return;
+    }
+
     const prompt = require('prompt-sync')({ sigint: true });
 
-    let validMove = true;
+    let validMove;
     let chosenMove;
     while(!validMove){
+        validMove = true;
         chosenMove = prompt("So, you'd like to modify the state. Which type of move would you like to make? (roll/bet/modifier) ").toLowerCase();
         switch(chosenMove){
             case "roll":
@@ -222,11 +228,32 @@ function modifyCurrentGameState(){
                 break;
             case "bet":
             case "b":
+                let isSelfBet = prompt("Is this a bet for yourself? (yes/no) ").toLowerCase();
+                isSelfBet = (isSelfBet === "yes" || isSelfBet === "y" ? true : false);
+                let betColor = prompt("What color camel is the bet on? ").toLowerCase();
+                if(isSelfBet){
+                    state.personalLegBets[betColor].push(state.legBetsRemaining[betColor][state.legBetsRemaining[betColor].length - 1]);
+                }
+                state.legBetsRemaining[betColor] = state.legBetsRemaining[betColor].slice(0,-1);
+                console.log(`The bet on the ${betColor} camel has been made.\n`);
                 break;
             case "modifier":
             case "m":
+                let isSelfToken = prompt("Is this a modifier token for yourself (yes/no) ").toLowerCase();
+                isSelfToken = (isSelfToken === "yes" || isSelfToken === "y" ? true : false);
+                let position = parseInt(prompt("What space is the modifier on? (0-based) "));
+                let modifierValue = prompt("Is it a positive or negative token? (pos/neg) ").toLowerCase();
+
+                state.modifierTokens.push({
+                    position: position,
+                    modifierValue: (modifierValue === "pos" || modifierValue === "p" ? 1 : -1),
+                    isSelf: isSelfToken,
+                })
+
+                console.log(`The modifier token has been placed on board space ${position}.\n`);
                 break;
             default:
+                validMove = false;
                 console.log("I don't recognize that move. Try again.\n");
         }
     }
@@ -234,7 +261,7 @@ function modifyCurrentGameState(){
 }
 
 function getAIMove(state){
-    console.log("AI MOVE");
+    console.log("The AI doesn't exist yet, SUCKA!!\n");
 }
 
 function capFirstLetter(string){
