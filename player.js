@@ -135,8 +135,8 @@ function setCurrentGameState(){
 
     // CAMEL POSITIONS
     ALL_COLORS.forEach((color) => {
-        state.camels[color].position = prompt(`In what board space is the ${color} camel? (0-based) `);
-        state.camels[color].altitude = prompt (`How many camels are below the ${color} camel? `);
+        state.camels[color].position = parseInt(prompt(`In what board space is the ${color} camel? (0-based) `));
+        state.camels[color].altitude = parseInt(prompt (`How many camels are below the ${color} camel? `));
     })
 
     // NEW GAME
@@ -221,10 +221,62 @@ function modifyCurrentGameState(){
         switch(chosenMove){
             case "roll":
             case "r":
-                let color = prompt("What color die did you roll? ").toLowerCase();
+                let camelColor = prompt("What color die did you roll? ").toLowerCase();
                 let num = parseInt(prompt("What number did you roll on the die? "));
 
-                // TODO
+                // Move it and all camels above.
+                const camelPosition = state.camels[camelColor].position;
+                const altitude = state.camels[camelColor].altitude;
+
+                let camelsBeingMoved = [];
+                let camelsOnLandingSpace = [];
+                let camelsBelowCamelMoving = [];
+
+                for(const color in state.camels) {
+                    if(state.camels[color].position === (camelPosition + num)){
+                        camelsOnLandingSpace.push(color);
+                    }
+                    if(state.camels[color].position === camelPosition && state.camels[color].altitude >= altitude){
+                        camelsBeingMoved.push(color);
+                    }
+                    if(state.camels[color].position === camelPosition && state.camels[color].altitude < altitude){
+                        camelsBelowCamelMoving.push(color);
+                    }
+                }
+
+                camelsBeingMoved.forEach((color) => {
+                    state.camels[color].position = camelPosition + num;
+                    state.camels[color].altitude = state.camels[color].altitude - camelsBelowCamelMoving.length + camelsOnLandingSpace.length;
+                })
+
+                // add die to dice rolled
+                state.diceRolled.push(camelColor);
+                // check end of game
+                for(const color in state.camels){
+                    if(state.camels[color].position >= 16){
+                        console.log('Game over');
+                    }
+                }
+                // check end of leg
+                if(state.diceRolled.length === 5){
+                    state.diceRolled = [];
+                    state.modifierTokens = [];
+                    state.legBetsRemaining = {
+                        red: [2,2,3,5],
+                        yellow: [2,2,3,5],
+                        blue: [2,2,3,5],
+                        green: [2,2,3,5],
+                        purple: [2,2,3,5],
+                    };
+                    state.personalLegBets = {
+                        red: [],
+                        yellow: [],
+                        blue: [],
+                        green: [],
+                        purple: [],
+                    }
+                    console.log('Leg over');
+                }
                 break;
             case "bet":
             case "b":
